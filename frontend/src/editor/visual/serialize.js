@@ -364,6 +364,22 @@ const nodes = {
       state.write(line)
       state.ensureNewLine()
     }
+    /*
+      The table's `{#id .class}`. With `multimdTable` on it goes directly under the last row, which is
+      where the Markdown editor's table editor writes it too. With it off the renderer reads tables as
+      GFM, where that line would be one more row, so it goes after a blank line instead --
+      `markdown-it-attrs` gives a line on its own after a table to the table. `closeBlock` is what
+      writes the blank line, so that inside a quote or a list it carries the prefix like every other
+      line.
+    */
+    const attrs = writeMdAttrs(node.attrs.mdAttrs)
+    if (attrs) {
+      if (!state.options.site.multimdTable) {
+        state.closeBlock(node)
+      }
+      state.write(attrs)
+      state.ensureNewLine()
+    }
     state.closeBlock(node)
   },
 

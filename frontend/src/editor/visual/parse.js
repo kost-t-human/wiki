@@ -502,7 +502,7 @@ const tokenSpecs = {
   dt: { block: 'definition_term' },
   dd: { block: 'definition_description' },
 
-  table: { block: 'table' },
+  table: { block: 'table', getAttrs: (tok) => ({ mdAttrs: readMdAttrs(tok) }) },
   tr: { block: 'table_row' },
   th: { block: 'table_header', getAttrs: cellAttrs },
   td: { block: 'table_cell', getAttrs: cellAttrs },

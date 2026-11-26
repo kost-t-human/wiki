@@ -160,6 +160,9 @@ const CONSTRUCTS = {
   'horizontal rule': 'above\n\n---\n\nbelow',
   table: '| A | B |\n|:--|--:|\n| 1 | 2 |',
   'table with escaped pipes': '| A | B |\n| --- | --- |\n| `a\\|b` | c |',
+  'table with a class after a blank line': '| A | B |\n| --- | --- |\n| 1 | 2 |\n\n{#t .dense}',
+  'quoted table with a class after a blank line':
+    '> | A | B |\n> | --- | --- |\n> | 1 | 2 |\n>\n> {.dense}',
   'html block': '<div class="raw">HTML block</div>',
   'html inline': 'Press <kbd>Ctrl</kbd> now.',
   'emoji and icon': 'Emoji :smile: and icon :mdi:home: here.',
@@ -191,6 +194,16 @@ const CONSTRUCTS = {
   'block attributes': 'Some text\n{.is-warning}',
   'escaped characters': 'A \\* not emphasis \\_ and \\[not a link\\]',
   'code containing backticks': '``a ` b``'
+}
+
+/**
+ * A table with its attributes line directly under the last row, under every config that turns
+ * `multimdTable` on. With it off the renderer reads tables as GFM, where that line is one more row of
+ * the table, so the same source is a different table there; the editor writes the line after a blank
+ * line instead, which the cases above cover.
+ */
+const MULTIMD_CONSTRUCTS = {
+  'table with a class': '| A | B |\n| --- | --- |\n| 1 | 2 |\n{.dense}'
 }
 
 /**
@@ -339,6 +352,9 @@ for (const [configName, config] of Object.entries(CONFIGS)) {
   const cases = Object.entries(CONSTRUCTS)
   if (config.wikiLinks) {
     cases.push(...Object.entries(WIKILINK_CONSTRUCTS))
+  }
+  if (config.multimdTable) {
+    cases.push(...Object.entries(MULTIMD_CONSTRUCTS))
   }
   for (const page of SAMPLE_PAGES) {
     if (page.content?.trim()) {

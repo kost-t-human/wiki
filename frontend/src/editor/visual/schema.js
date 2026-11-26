@@ -150,6 +150,17 @@ const tables = tableNodes({
   }
 })
 
+/*
+  The table carries the `markdown-it-attrs` line under it, `{#id .class}`, as every other block that
+  can have one does. Without it a class written on a table was dropped by the first save from this
+  editor.
+*/
+tables.table = {
+  ...tables.table,
+  attrs: { ...tables.table.attrs, ...mdAttrs },
+  toDOM: (node) => ['table', domAttrs(node), ['tbody', 0]]
+}
+
 export const schema = new Schema({
   nodes: {
     doc: { content: 'block+' },
