@@ -5,6 +5,7 @@ import { TableMap } from 'prosemirror-tables'
 import { inlineMarkdownValue } from '@/helpers/blocks'
 import { KINDS } from '@/renderers/modules/github-alerts'
 import { wikiLinkText } from '@/renderers/modules/markdown-it-wikilinks'
+import { formatColwidths } from '@/renderers/modules/table-colwidths'
 
 import { writeMdAttrs } from './schema'
 
@@ -115,6 +116,26 @@ function tableLines(state, table) {
     }
   }
   return lines
+}
+
+/**
+ * The width of each column, as a column resize left it on the cells: `colwidth` is an array on every
+ * cell with one entry per column it spans, and a column takes its width from the first cell in it that
+ * has one. Null for a column nobody sized.
+ */
+function columnWidths(table) {
+  const map = TableMap.get(table)
+  const widths = []
+  for (let col = 0; col < map.width; col++) {
+    let width = null
+    for (let row = 0; row < map.height && !width; row++) {
+      const pos = map.map[row * map.width + col]
+      const colwidth = table.nodeAt(pos).attrs.colwidth
+      width = colwidth?.[col - map.findCell(pos).left] || null
+    }
+    widths.push(width)
+  }
+  return widths
 }
 
 /**
@@ -362,6 +383,26 @@ const nodes = {
   table(state, node) {
     for (const line of tableLines(state, node)) {
       state.write(line)
+      state.ensureNewLine()
+    }
+    /*
+      The attributes line: the table's `{#id .class}` and the column widths. With `multimdTable` on it
+      goes directly under the last row, which is where the Markdown editor's table editor writes it too.
+      With it off the renderer reads tables as GFM, where that line would be one more row, so it goes
+      after a blank line instead -- `markdown-it-attrs` gives a line on its own after a table to the
+      table. `closeBlock` is what writes the blank line, so that inside a quote or a list it carries the
+      quote's or the item's prefix like every other line. Inside a tight list that blank line makes the
+      list loose, and there is no other spelling with the plugin off that keeps both.
+    */
+    const attrs = writeMdAttrs({
+      ...node.attrs.mdAttrs,
+      colwidths: formatColwidths(columnWidths(node))
+    })
+    if (attrs) {
+      if (!state.options.site.multimdTable) {
+        state.closeBlock(node)
+      }
+      state.write(attrs)
       state.ensureNewLine()
     }
     state.closeBlock(node)

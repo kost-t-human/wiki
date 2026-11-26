@@ -2,12 +2,13 @@ import { gapCursor } from 'prosemirror-gapcursor'
 import { history, redo, undo } from 'prosemirror-history'
 import { keymap } from 'prosemirror-keymap'
 import { EditorState } from 'prosemirror-state'
-import { tableEditing } from 'prosemirror-tables'
+import { columnResizing, tableEditing } from 'prosemirror-tables'
 import { EditorView } from 'prosemirror-view'
 
 import { MarkdownRenderer } from '@/renderers/markdown'
 
 import { collabPlugins, collabRedo, collabUndo, seedIfEmpty } from './collab'
+import { DEFAULT_CELL_MIN_WIDTH, WikiTableView, freezeColumnWidths } from './columnWidths'
 import { buildInputRules, buildKeymap, taskCheckboxes } from './commands'
 import { keepSelectionOnFocus } from './focus'
 import { imageBar } from './images'
@@ -108,11 +109,18 @@ export function createVisualEditor({
     keepSelectionOnFocus(),
     taskCheckboxes(),
     /*
-      No `columnResizing`: a dragged width is a `colwidth` on each cell that markdown has no way to
-      write down, so it was lost on save, and its handle -- a widget inside the hovered cell -- became
-      the cell's last child, which gave the paragraph back the bottom margin `_page-contents.scss` takes
-      off it and doubled the height of every row the pointer crossed.
+      Dragging a column's edge sets its width: a `colwidth` on each cell, which the serializer writes
+      into the `{colwidths=…}` line of the table and `renderers/modules/table-colwidths.js` draws as a
+      `<colgroup>`. Grabbing an edge first gives every column of the table its width on screen, or the
+      room the dragged column gains goes to its neighbours -- see `columnWidths.js`, which also has the
+      view the tables are drawn with.
+
+      The handle is a widget inside the hovered cell and so becomes the cell's last child;
+      `_visual-editor.scss` keeps the bottom margin off the content before it, or every row the pointer
+      crossed doubled in height. Before `tableEditing`, as `prosemirror-tables` requires.
     */
+    freezeColumnWidths(),
+    columnResizing({ View: WikiTableView, defaultCellMinWidth: DEFAULT_CELL_MIN_WIDTH }),
     tableEditing(),
     /*
       The bar that appears under the link the caret is in. A plugin because a link is a mark and has no

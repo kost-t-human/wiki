@@ -160,6 +160,14 @@ const CONSTRUCTS = {
   'horizontal rule': 'above\n\n---\n\nbelow',
   table: '| A | B |\n|:--|--:|\n| 1 | 2 |',
   'table with escaped pipes': '| A | B |\n| --- | --- |\n| `a\\|b` | c |',
+  'table with attributes after a blank line':
+    '| A | B |\n| --- | --- |\n| 1 | 2 |\n\n{.dense colwidths="80,160"}',
+  'quoted table with attributes after a blank line':
+    '> | A | B |\n> | --- | --- |\n> | 1 | 2 |\n>\n> {.dense colwidths="80,160"}',
+  'table with too few column widths':
+    '| A | B | C |\n| --- | --- | --- |\n| 1 | 2 | 3 |\n\n{colwidths="100"}',
+  'table with too many column widths':
+    '| A | B |\n| --- | --- |\n| 1 | 2 |\n\n{colwidths="100,200,300,400"}',
   'html block': '<div class="raw">HTML block</div>',
   'html inline': 'Press <kbd>Ctrl</kbd> now.',
   'emoji and icon': 'Emoji :smile: and icon :mdi:home: here.',
@@ -191,6 +199,24 @@ const CONSTRUCTS = {
   'block attributes': 'Some text\n{.is-warning}',
   'escaped characters': 'A \\* not emphasis \\_ and \\[not a link\\]',
   'code containing backticks': '``a ` b``'
+}
+
+/**
+ * Tables with their attributes line directly under the last row, under every config that turns
+ * `multimdTable` on. With it off the renderer reads tables as GFM, where that line is one more row of
+ * the table, so the same source is a different table there; the editor writes the line after a blank
+ * line instead, which the cases above cover.
+ */
+const MULTIMD_CONSTRUCTS = {
+  'table with a class': '| A | B |\n| --- | --- |\n| 1 | 2 |\n{.dense}',
+  'table with column widths':
+    '| A | B | C |\n| --- | --- | --- |\n| 1 | 2 | 3 |\n{colwidths="120,,300"}',
+  'table with a class and column widths':
+    '| A | B |\n| --- | --- |\n| 1 | 2 |\n{#t .dense colwidths="80,160"}',
+  'merged table with column widths':
+    '| A | B | C |\n| --- | --- | --- |\n| wide || 3 |\n| ^^ || y |\n{colwidths="100,50,200"}',
+  'table with a merged header and column widths':
+    '| Wide head || C |\n| --- | --- | --- |\n| 1 | 2 | 3 |\n{colwidths="100,50,200"}'
 }
 
 /**
@@ -339,6 +365,9 @@ for (const [configName, config] of Object.entries(CONFIGS)) {
   const cases = Object.entries(CONSTRUCTS)
   if (config.wikiLinks) {
     cases.push(...Object.entries(WIKILINK_CONSTRUCTS))
+  }
+  if (config.multimdTable) {
+    cases.push(...Object.entries(MULTIMD_CONSTRUCTS))
   }
   for (const page of SAMPLE_PAGES) {
     if (page.content?.trim()) {

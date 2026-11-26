@@ -150,6 +150,19 @@ const tables = tableNodes({
   }
 })
 
+/*
+  The table itself carries what the line under it says: its `{#id .class}`, and the column widths the
+  cells' `colwidth` hold are gathered back into that same line on save (`serialize.js`). Without the
+  attribute a class written on a table was dropped by the first save from this editor. On screen a
+  table is drawn by `WikiTableView` (`columnWidths.js`), which draws the same attributes; `toDOM` is
+  what a copied table carries to the clipboard.
+*/
+tables.table = {
+  ...tables.table,
+  attrs: { ...tables.table.attrs, ...mdAttrs },
+  toDOM: (node) => ['table', domAttrs(node), ['tbody', 0]]
+}
+
 export const schema = new Schema({
   nodes: {
     doc: { content: 'block+' },

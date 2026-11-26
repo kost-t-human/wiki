@@ -263,6 +263,16 @@
   }
 
   /*
+    The wrapper `columnResizing` draws every table in. Until every column has a width the table is
+    still the box that scrolls, as on the page, so the wrapper is only a wrapper: without this its
+    `overflow-x` from `prosemirror-tables` kept the table's top margin inside it, and the table bar,
+    which is placed against it, sat that much higher than the table.
+  */
+  &.ProseMirror .tableWrapper:not(.table-sized) {
+    overflow: visible;
+  }
+
+  /*
     The head row, drawn as the article draws it. `_page-contents.scss` styles the head through `thead`,
     and `prosemirror-tables` has no row groups -- every row sits straight in one `tbody` -- so here the
     head is the first row with no data cell in it, which is what the parser makes of markdown's
@@ -294,6 +304,25 @@
 
   tr:first-child:not(:has(> td)) ~ tr:nth-child(odd) > td {
     background-color: var(--content-table-row-alt);
+  }
+
+  /*
+    The column resize handle is a widget inside the hovered cell, so it is the cell's last child, and
+    `_page-contents.scss` takes the bottom margin off the last child only -- the paragraph before the
+    handle got its margin back, and every row the pointer crossed grew by it.
+  */
+  th > :has(+ .column-resize-handle),
+  td > :has(+ .column-resize-handle) {
+    margin-bottom: 0;
+  }
+
+  /*
+    The handle sits 2px past the cell's edge. On the last column that is past the edge of whatever box
+    scrolls the table -- the table itself, or the wrapper once every column has a width -- so a
+    scrollbar came and went with the pointer and the content below jumped with it.
+  */
+  :is(th, td):last-child > .column-resize-handle {
+    right: 0;
   }
 
   /* The colour only; the geometry is in `prosemirror-tables`' own stylesheet. */

@@ -1936,6 +1936,38 @@
   }
 
   /*
+    A table whose columns all have a width (`{colwidths=…}`, set by dragging a column's edge in the
+    Visual editor). The box above lays the real table out inside itself, at the article's width at
+    most, so a table wider than the article had its columns squeezed off the widths it was given. Here
+    the wrapper the renderer puts round it is the box -- the perimeter, the corners, the scrolling --
+    and the table inside is laid out at exactly its widths, scrolling when they add up to more than
+    the article. The Visual editor gives its own wrapper the same class (`editor/visual/columnWidths.js`).
+  */
+  .table-sized {
+    width: max-content;
+    max-width: 100%;
+    margin: 1.5em 0;
+    /* -> The table's own size, here, so the margin above is the one a table without widths has */
+    font-size: 0.9375em;
+    border: 1px solid var(--content-rule);
+    border-radius: 8px;
+    box-shadow: var(--content-table-shadow);
+    overflow-x: auto;
+
+    > table {
+      display: table;
+      table-layout: fixed;
+      font-size: 1em;
+      max-width: none;
+      margin: 0;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+      overflow: visible;
+    }
+  }
+
+  /*
     Interior rules only. A cell border all the way round would double the table's own at the perimeter,
     and at the corners it would be a straight line cut off by the radius -- a notch rather than a curve.
   */
@@ -2405,6 +2437,25 @@
     h5,
     h6 {
       break-after: avoid;
+    }
+
+    /*
+      A table with column widths is laid out at them and scrolls when they add up to more than the
+      article -- and paper does not scroll, so what did not fit was cut off. On paper it is laid out
+      like any other table, its text wrapping to the sheet's width.
+    */
+    .table-sized {
+      overflow: visible;
+
+      > table {
+        table-layout: auto;
+        width: auto !important;
+        max-width: 100%;
+      }
+
+      col {
+        width: auto !important;
+      }
     }
 
     /*

@@ -502,7 +502,7 @@ const tokenSpecs = {
   dt: { block: 'definition_term' },
   dd: { block: 'definition_description' },
 
-  table: { block: 'table' },
+  table: { block: 'table', getAttrs: (tok) => ({ mdAttrs: readMdAttrs(tok) }) },
   tr: { block: 'table_row' },
   th: { block: 'table_header', getAttrs: cellAttrs },
   td: { block: 'table_cell', getAttrs: cellAttrs },
@@ -662,7 +662,10 @@ function cellAttrs(tok) {
   return {
     align: alignOf(tok),
     colspan: Number(tok.attrGet('colspan') ?? 1),
-    rowspan: Number(tok.attrGet('rowspan') ?? 1)
+    rowspan: Number(tok.attrGet('rowspan') ?? 1),
+    // -> The widths of the columns the cell covers, handed out from the table's `{colwidths=…}` by
+    //    `renderers/modules/table-colwidths.js`; what `columnResizing` reads and writes
+    colwidth: tok.meta?.colwidth ?? null
   }
 }
 

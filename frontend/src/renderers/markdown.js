@@ -19,6 +19,7 @@ import mdBlockquoteAuthor from './modules/blockquote-author'
 import mdWikiLinks from './modules/markdown-it-wikilinks'
 import mdInlineMath from './modules/markdown-it-inline-math'
 import mdInlineBlocks from './modules/markdown-it-inline-blocks'
+import mdTableColwidths from './modules/table-colwidths'
 import twemoji from '@twemoji/api'
 
 // -> Relative, like this file's other in-repo imports: it is also reachable from the headless
@@ -201,7 +202,9 @@ export class MarkdownRenderer {
       */
       .use(mdMdc, { syntax: { inlineComponent: false } })
       .use(mdAttrs, {
-        allowedAttributes: ['id', 'class', 'target']
+        // -> `colwidths` only means something under a table, and is taken off every token that
+        //    carries it before render -- see `modules/table-colwidths.js`
+        allowedAttributes: ['id', 'class', 'target', 'colwidths']
       })
       .use(mdDecorate)
       .use(mdEmoji)
@@ -493,6 +496,13 @@ export class MarkdownRenderer {
         }
       })
     }
+
+    /*
+      Column widths, `{colwidths="120,,300"}` under a table, which is how the Visual editor stores the
+      width a column was dragged to. After the spans are back on their cells above, since a cell's
+      column is found by laying the spans out.
+    */
+    this.md.use(mdTableColwidths)
 
     // --------------------------------
     // LINK DESTINATIONS
