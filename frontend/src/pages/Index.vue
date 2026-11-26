@@ -450,7 +450,7 @@
       -->
       <div
         class="page-sidebar"
-        v-if="showSidebar"
+        v-if="showSidebar && sidebarHasContent"
         :lang="pageStore.locale"
         :dir="siteStore.localeDir(pageStore.locale)"
         :class="{ 'is-open': tocPanelIsOpen }"
@@ -1251,6 +1251,23 @@ const showLastEditedBy = computed(() => {
     siteStore.features.lastEditedBy && pageStore.showLastEditedBy && Boolean(pageStore.authorId)
   )
 })
+/*
+  Whether the column has anything in it. The article's column holds the contents, the tags, the rating
+  and the last editor, each behind its own switch; with all of them off or empty -- a short page with no
+  headings, on a site that hides the last editor -- it was an empty strip taking room from the article.
+  Read by the template only, after all of these exist: `showSidebar` is read while this setup is still
+  running.
+*/
+const sidebarHasContent = computed(
+  () =>
+    isBlog.value ||
+    isFeedbackBoard.value ||
+    activeView.value === `talk` ||
+    showToc.value ||
+    showTags.value ||
+    showRatings.value ||
+    showLastEditedBy.value
+)
 const lastEditorInitial = computed(() => {
   return (pageStore.authorName || '?').trim().charAt(0).toUpperCase()
 })
